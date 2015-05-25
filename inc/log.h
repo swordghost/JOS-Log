@@ -22,8 +22,6 @@ struct {
 	struct Log_block_head {
 		int lg_dst_blkaddr;
 		int lg_info;
-		int lg_sbmt_t;
-		int lg_wrt_t;
 	} log_head[LOGBLKS];
 	int wb_time;
 
