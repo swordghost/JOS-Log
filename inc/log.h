@@ -6,26 +6,28 @@
 #include <inc/fs.h>
 
 // Basic logging parameters
-#define LOGBLKS	64
-#define LOGSIZE	(LOGBLKS * BLKSIZE)
+#define LOGBLKS	65				// log region blocks
+#define LOGSIZE	(LOGBLKS * BLKSIZE)		// log region size
+#define LOGCONTSIZE 	512				// log content size
+#define BLKCONTS	(BLKSIZE / LOGCONTSIZE)	// number of log contents in a block
+#define LOGNUM	(BLKCONTS * LOGBLKS)		// numbers of log headers/contents in log region
 
-// Log header information in lg_info
-#define LOG_V		0x01	// valid ?
-#define LOG_S		0x02	// logs submit to disk logs
-#define LOG_C		0x04	// logs commit to disk blocks
-#define LOG_P		0x08	// priority of writing back
-#define LOG_A		0x10	// log is active in writing
+// Log header information in lh_status
+#define LOG_D		0x1000000		// logs dirty, not commit to disk
+#define LOG_HC		0x2000000		// logs have content
 
-#define LOG_R		0x03	// recovered logs ?
+#define LOG_OFF(x)	(x & 0xfff)		// use this to get the offset
+#define LOG_SIZE(x)	((x & 0xfff000) >> 12)	// use this to get the size
 
-struct {
-	struct Log_block_head {
-		int lg_dst_blkaddr;
-		int lg_info;
-	} log_head[LOGBLKS];
-	int wb_time;
+struct log_header
+{
+	void* lh_blkaddr;
+	int lh_status;
+};
 
-	char _pad[PGSIZE - sizeof(log_head)];
-} Log;
+struct log_content
+{
+	char lc_log[LOGCONTSIZE];
+};
 
 #endif /* !JOS_INC_LOG_H */

@@ -16,7 +16,7 @@ check_super(void)
 
 	if (super->s_nblocks > DISKSIZE/BLKSIZE)
 		panic("file system is too large");
-
+	cprintf("super: %d\n", super->s_nblocks);
 	cprintf("superblock is good\n");
 }
 
@@ -44,6 +44,7 @@ free_block(uint32_t blockno)
 	if (blockno == 0)
 		panic("attempt to free zero block");
 	bitmap[blockno/32] |= 1<<(blockno%32);
+	flush_block(bitmap + blockno/32);
 }
 
 // Search the bitmap for a free block and allocate it.  When you
@@ -120,7 +121,9 @@ fs_init(void)
 	// Set "bitmap" to the beginning of the first bitmap block.
 	bitmap = diskaddr(2);
 	check_bitmap();
-	
+
+	log_init();
+	check_log();
 }
 
 // Find the disk block number slot for the 'filebno'th block in file 'f'.
@@ -401,6 +404,7 @@ file_write(struct File *f, const void *buf, size_t count, off_t offset)
 		if ((r = file_get_block(f, pos / BLKSIZE, &blk)) < 0)
 			return r;
 		bn = MIN(BLKSIZE - pos % BLKSIZE, offset + count - pos);
+		log_record(addr2blockno(blk), pos % BLKSIZE, (char *)buf, bn);
 		memmove(blk + pos % BLKSIZE, buf, bn);
 		pos += bn;
 		buf += bn;
@@ -478,6 +482,7 @@ file_flush(struct File *f)
 		if (file_block_walk(f, i, &pdiskbno, 0) < 0 ||
 		    pdiskbno == NULL || *pdiskbno == 0)
 			continue;
+		log_record(*pdiskbno, 0, NULL, 0);
 		flush_block(diskaddr(*pdiskbno));
 	}
 	flush_block(f);

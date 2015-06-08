@@ -10,6 +10,15 @@ diskaddr(uint32_t blockno)
 	return (char*) (DISKMAP + blockno * BLKSIZE);
 }
 
+uint32_t
+addr2blockno(void *addr)
+{
+	if (addr < (void *)DISKMAP || addr >= (void *)DISKMAP + DISKSIZE)
+		panic("bad disk address 0x%x in addr2blockno", addr);
+	addr = ROUNDDOWN(addr, BLKSIZE);
+	return (((int)addr - DISKMAP) / BLKSIZE);
+}
+
 // Is this virtual address mapped?
 bool
 va_is_mapped(void *va)

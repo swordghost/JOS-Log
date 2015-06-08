@@ -127,6 +127,10 @@ finishdisk(void)
 	for (i = 0; i < blockof(diskpos); ++i)
 		bitmap[i/32] &= ~(1<<(i%32));
 
+	for (i = nblocks - 65; i < nblocks; i++){
+		bitmap[i/32] &= ~(1<<(i%32));
+	}
+
 	if ((r = msync(diskmap, nblocks * BLKSIZE, MS_SYNC)) < 0)
 		panic("msync: %s", strerror(errno));
 }
@@ -228,7 +232,7 @@ main(int argc, char **argv)
 		usage();
 
 	nblocks = strtol(argv[2], &s, 0);
-	if (*s || s == argv[2] || nblocks < 2 || nblocks > 1024)
+	if (*s || s == argv[2] || nblocks < 2)// || nblocks > 1024)
 		usage();
 
 	opendisk(argv[1]);

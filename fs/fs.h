@@ -1,5 +1,6 @@
 #include <inc/fs.h>
 #include <inc/lib.h>
+#include <inc/log.h>
 
 #define SECTSIZE	512			// bytes per disk sector
 #define BLKSECTS	(BLKSIZE / SECTSIZE)	// sectors per block
@@ -11,8 +12,17 @@
 /* Maximum disk size we can handle (3GB) */
 #define DISKSIZE	0xC0000000
 
+// Logs layout in memory
+// The log blocks lie in the end of disk.
+#define LOGLIM	(DISKMAP + DISKSIZE)
+#define LOGMAP	(LOGLIM - LOGSIZE)
+
 struct Super *super;		// superblock
 uint32_t *bitmap;		// bitmap blocks mapped in memory
+
+struct log_header *Log_header;		// log header pointer
+struct log_content *Log_content;		// log content pointer
+int log_pointer;
 
 /* ide.c */
 bool	ide_probe_disk1(void);
@@ -23,6 +33,7 @@ int	ide_write(uint32_t secno, const void *src, size_t nsecs);
 
 /* bc.c */
 void*	diskaddr(uint32_t blockno);
+uint32_t addr2blockno(void *addr);
 bool	va_is_mapped(void *va);
 bool	va_is_dirty(void *va);
 void	flush_block(void *addr);
@@ -47,3 +58,13 @@ int	alloc_block(void);
 /* test.c */
 void	fs_test(void);
 
+/* log.c */
+void log_init(void);
+
+void log_record(uint32_t blockno, int offset, char *logdata, int size);
+
+void log_submit(void);
+void log_commit(void);
+void recover_from_log(void);
+
+void check_log(void);

@@ -314,6 +314,8 @@ serve(void)
 	int perm, r;
 	void *pg;
 
+	int log_flush_count = 0;
+
 	while (1) {
 		perm = 0;
 		req = ipc_recv((int32_t *) &whom, fsreq, &perm);
@@ -339,6 +341,12 @@ serve(void)
 		}
 		ipc_send(whom, r, pg, perm);
 		sys_page_unmap(0, fsreq);
+
+		log_flush_count ++;
+		if (log_flush_count == 10){
+			log_flush_count = 0;
+			log_submit();
+		}
 	}
 }
 
