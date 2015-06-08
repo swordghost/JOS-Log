@@ -20,9 +20,9 @@
 struct Super *super;		// superblock
 uint32_t *bitmap;		// bitmap blocks mapped in memory
 
-struct log_header *Log_header;		// log header pointer
-struct log_content *Log_content;		// log content pointer
-int log_pointer;
+struct log_header *Log_header;		// log header pointer, map to LOGMAP
+struct log_content *Log_content;		// log content pointer, map to LOGMAP + BLKSIZE
+int log_pointer;				// free log item pointer
 
 /* ide.c */
 bool	ide_probe_disk1(void);

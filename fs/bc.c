@@ -10,6 +10,7 @@ diskaddr(uint32_t blockno)
 	return (char*) (DISKMAP + blockno * BLKSIZE);
 }
 
+// Return the block number of this address.
 uint32_t
 addr2blockno(void *addr)
 {
