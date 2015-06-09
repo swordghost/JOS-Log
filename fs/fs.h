@@ -36,7 +36,7 @@ void*	diskaddr(uint32_t blockno);
 uint32_t addr2blockno(void *addr);
 bool	va_is_mapped(void *va);
 bool	va_is_dirty(void *va);
-void	flush_block(void *addr);
+void flush_block(void *addr);
 void	bc_init(void);
 
 /* fs.c */
@@ -68,3 +68,4 @@ void log_commit(void);
 void recover_from_log(void);
 
 void check_log(void);
+void print_log(int logno, char *info);

@@ -3,6 +3,7 @@
 
 #include "fs.h"
 
+#define debug 0
 
 // --------------------------------------------------------------
 // Log Initialization
@@ -60,9 +61,19 @@ log_record(uint32_t blockno, int offset, char *logdata, int size)
 		for (i = 0; i < log_pointer; i ++){
 			if (Log_header[i].lh_blkaddr == addr){
 				Log_header[i].lh_status &= ~LOG_D;
+
+				// Check the log system works
+				if (debug)
+					print_log(i, "clear");
+
 			}
 		} // Clear all logs with the same block number.
 	}
+
+	// Check the log system works
+	if (debug > 1)
+		print_log(log_pointer, "record");
+
 
 	log_pointer ++;
 }
@@ -91,6 +102,11 @@ log_commit(void)
 					Log_header[j].lh_status &= ~LOG_D;
 			} // Modifications to the same block only need to be flushed once
 			Log_header[i].lh_status &= ~LOG_D;
+
+			// Check the log system works
+			if (debug)
+				print_log(i, "clear");
+
 			flush_block(Log_header[i].lh_blkaddr);
 		}
 	}
@@ -110,8 +126,13 @@ recover_from_log(void)
 			size = LOG_SIZE(Log_header[i].lh_status);
 			memmove(Log_header[i].lh_blkaddr + offset, Log_content[i].lc_log, size);
 			Log_header[i].lh_status &= ~LOG_D;
+
+			// Check the log system works
+			if (debug)
+				print_log(i, "recover");
+			
 			flush_block(Log_header[i].lh_blkaddr);
-			cprintf("Address 0x%x is recovered from log.", Log_header[i].lh_blkaddr);
+			cprintf("Address 0x%x is recovered from log.\n", Log_header[i].lh_blkaddr);
 		}
 	}
 	log_submit();
@@ -131,4 +152,13 @@ check_log(void)
 		assert(!block_is_free(addr2blockno((void *)LOGMAP + i * BLKSIZE)));
 	}
 	cprintf("log region is good\n");
+}
+
+// Print the log
+void
+print_log(int logno, char *info) {
+	cprintf("log-%s: {\n\tlog no: %d,\n\tblock no: %d,\n\tstatus: %08x", info, logno, ((unsigned int)Log_header[logno].lh_blkaddr - DISKMAP) / BLKSIZE, Log_header[logno].lh_status);
+	if (Log_header[logno].lh_status & LOG_HC)
+		cprintf(",\n\tcontent: {\n%512.512s\n}", Log_content[logno].lc_log);
+	cprintf("\n}\n");
 }

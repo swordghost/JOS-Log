@@ -267,6 +267,7 @@ usage(void)
 void
 umain(int argc, char **argv)
 {
+	cprintf("Welcome to JOS shell!\n");
 	int r, interactive, echocmds;
 	struct Argstate args;
 
