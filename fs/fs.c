@@ -391,7 +391,7 @@ file_read(struct File *f, void *buf, size_t count, off_t offset)
 int
 file_write(struct File *f, const void *buf, size_t count, off_t offset)
 {
-	int r, bn;
+	int r, bn, i;
 	off_t pos;
 	char *blk;
 
@@ -404,7 +404,10 @@ file_write(struct File *f, const void *buf, size_t count, off_t offset)
 		if ((r = file_get_block(f, pos / BLKSIZE, &blk)) < 0)
 			return r;
 		bn = MIN(BLKSIZE - pos % BLKSIZE, offset + count - pos);
-		log_record(addr2blockno(blk), pos % BLKSIZE, (char *)buf, bn);
+		for(i = 0; i + LOGCONTSIZE < bn; i += LOGCONTSIZE){
+			log_record(addr2blockno(blk), pos % BLKSIZE + i, (char *)buf + i, LOGCONTSIZE);
+		}
+		log_record(addr2blockno(blk), pos % BLKSIZE + i, (char *)buf + i, bn - i);
 		memmove(blk + pos % BLKSIZE, buf, bn);
 		pos += bn;
 		buf += bn;
