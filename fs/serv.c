@@ -344,6 +344,7 @@ serve(void)
 
 		log_flush_count ++;
 		if (log_flush_count == 10){
+			cprintf("flush log\n");
 			log_flush_count = 0;
 			log_submit();
 		}

@@ -54,6 +54,9 @@ log_record(uint32_t blockno, int offset, char *logdata, int size)
 		Log_header[log_pointer].lh_status |= LOG_HC;
 		Log_header[log_pointer].lh_status |= LOG_D;
 		memmove(Log_content[log_pointer].lc_log, logdata, size);
+		// Check the log system works
+		if (debug > 1)
+			print_log(log_pointer, "record");
 	}
 	else { // Commit Item
 		Log_header[log_pointer].lh_status = 0;
@@ -69,11 +72,6 @@ log_record(uint32_t blockno, int offset, char *logdata, int size)
 			}
 		} // Clear all logs with the same block number.
 	}
-
-	// Check the log system works
-	if (debug > 1)
-		print_log(log_pointer, "record");
-
 
 	log_pointer ++;
 }
