@@ -29,4 +29,4 @@ JOS-Log拥有全套的JOS文件，在安装有QEMU的Linux环境下可于终端�
 见PPT的最后两页
 
 【Github地址】
-本Project1的github地址为https://github.com/swordghost/JOS-Log
+本Project的github地址为https://github.com/swordghost/JOS-Log
